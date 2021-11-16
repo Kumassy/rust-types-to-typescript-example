@@ -26,6 +26,31 @@ struct InputLog {
     actions: Vec<ActionLog>,
 }
 
+#[derive(JsonSchema)]
+enum LaunchResultError {
+    LaunchFailed(String),
+    InternalClientError(String),
+    ClientExited(String),
+}
+
+type LaunchResult = Result<(), LaunchResultError>;
+
+
+#[derive(JsonSchema)]
+#[serde(tag = "kind", content = "payload")]
+enum LaunchLocalResultError {
+    SpawnFailed(String),
+    NoStdout,
+    LineCorrupted(String),
+}
+
+type LaunchLocalResult = Result<(), LaunchLocalResultError>;
+
+#[derive(JsonSchema)]
+pub struct LocalMessage {
+    message: String,
+}
+
 fn write_schema(dir: &std::path::Path, name: &str, schema: &RootSchema) -> std::io::Result<()> {
     let output = serde_json::to_string_pretty(schema).unwrap();
     let output_path = dir.join(format!("{}.json", name));
@@ -46,6 +71,16 @@ fn main() -> std::io::Result<()> {
 
     let schema = schema_for!(InputLog);
     write_schema(&dir, "input_log", &schema)?;
+
+    let schema = schema_for!(LaunchResult);
+    write_schema(&dir, "launch_result", &schema)?;
+
+    let schema = schema_for!(LaunchLocalResult);
+    write_schema(&dir, "launch_local_result", &schema)?;
+
+    let schema = schema_for!(LocalMessage);
+    write_schema(&dir, "local_message", &schema)?;
+    
     println!("Wrote schemas to {}", dir.to_string_lossy());
 
     Ok(())

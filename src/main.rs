@@ -51,6 +51,12 @@ pub struct LocalMessage {
     message: String,
 }
 
+#[derive(JsonSchema)]
+pub struct ClientInfo {
+    pub client_id: String,
+    pub assigned_port: String,
+}
+
 fn write_schema(dir: &std::path::Path, name: &str, schema: &RootSchema) -> std::io::Result<()> {
     let output = serde_json::to_string_pretty(schema).unwrap();
     let output_path = dir.join(format!("{}.json", name));
@@ -80,6 +86,9 @@ fn main() -> std::io::Result<()> {
 
     let schema = schema_for!(LocalMessage);
     write_schema(&dir, "local_message", &schema)?;
+
+    let schema = schema_for!(ClientInfo);
+    write_schema(&dir, "client_info", &schema)?;
     
     println!("Wrote schemas to {}", dir.to_string_lossy());
 
